@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+      name: backend
+spec:
+      replicas: 2
+      selector:
+            matchLabels:
+                  app: backend
+      template:
+            metadata:
+                  labels:
+                        app: backend
+            spec:
+                  containers:
+                        - name: backend
+                          image: wheezybatom/microservices-backend:latest
+                          env:
+                                - name: DB_HOST
+                                  value: "mongo"
+                                - name: DB_USER
+                                  valueFrom:
+                                        secretKeyRef:
+                                              name: db-secret
+                                              key: username
+                                - name: DB_PASS
+                                  valueFrom:
+                                        secretKeyRef:
+                                              name: db-secret
+                                              key: password
+                                - name: ALLOWED_ORIGINS
+                                  value: "http://localhost"
+                          resources:
+                                limits:
+                                      memory: "512Mi"
+                                      cpu: "500m"
+                                requests:
+                                      memory: "256Mi"
+                                      cpu: "250m"

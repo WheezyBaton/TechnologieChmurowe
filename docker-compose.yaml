@@ -1,0 +1,38 @@
+services:
+      frontend:
+            build: ./frontend
+            ports:
+                  - "3000:80"
+            depends_on:
+                  backend:
+                        condition: service_healthy
+
+      backend:
+            build: ./backend
+            ports:
+                  - "5000:5000"
+            environment:
+                  DB_USER: admin
+                  DB_PASS: secret
+            depends_on:
+                  mongo:
+                        condition: service_healthy
+            healthcheck:
+                  test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+                  interval: 10s
+                  timeout: 5s
+                  retries: 3
+
+      mongo:
+            image: mongo:6.0
+            environment:
+                  MONGO_INITDB_ROOT_USERNAME: admin
+                  MONGO_INITDB_ROOT_PASSWORD: secret
+            healthcheck:
+                  test: mongosh --eval "db.adminCommand('ping')"
+                  interval: 10s
+                  timeout: 10s
+                  retries: 5
+
+volumes:
+      mongo-data:
